@@ -1,0 +1,85 @@
+#org $fa00
+#zpg $00
+
+// the row to print to
+char (z) row;
+// the column to print to
+char (z) col;
+// page being used for text mode ($04 or $08)
+char (z) txt_page;
+// variable for math
+char (z) var;
+// temporary variable
+int (z) temp;
+// the address corresponding to row
+int (z) row_addr;
+
+// reset interrupt handler
+fn reset {
+    call cls;
+    row = 0;
+    col = 0;
+
+    // infinite loop cause not really a function
+    while 1 {}
+    // don't insert rts
+    fall;
+}
+
+/**
+ *                          Divides A by var
+ * @param  A                Dividend.
+ * @param  var              Divisor.
+ * @return A                A mod var.
+ * @return X                A / var.
+ */
+pub fn divide { // pub -> visible externally, "file" is default
+    X = 0;
+    while A >= var {
+        X++;
+        A -= var;
+    }
+}
+
+/**
+ *                          Calculates row_addr using row
+ * @param  A                row to calculate
+ */
+calc_row {
+    row = A;
+// file-visible label
+file skip_store:
+
+    // high byte = ((row % 8) / 2) + txt_page;
+    // low byte = (odd row ? $80 : $00) + ($28 * (row / 8))
+
+    X = 8;
+    var = X;
+    push A;
+    call divide;        // get row % 8, keep row / 8 in X for later
+    A /= 2;             // divide by 2
+    A += txt_page;      // add txt_page
+    <row_addr = A;      // into high byte
+    pop A;
+    if A & 1 {          // if odd
+        A = $80;
+    }                   // else A will be 0
+    
+    while X {           // add ($28 * (row / 8))
+        A += $28;
+        X--;
+    }
+    >row_addr = A;
+}
+
+/**
+ *                          Clears the screen
+ */
+pub fn cls {
+    for row = 0..23 {
+        call calc_row.skip_store;
+        for Y = 0..39 {
+            (row_addr),Y = ' ';
+        }
+    }
+}

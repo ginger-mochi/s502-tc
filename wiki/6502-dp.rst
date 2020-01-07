@@ -1,0 +1,84 @@
+Command Line
+------------
+
++--------------+--------------------------+
+| -s *address* | specify starting address |
++--------------+--------------------------+
+
+If present, this argument must appear first. Only one object (``*.65o``),
+symbol table (``*.65s``), or binary file (``*.bin``) may be passed
+in an invocation.
+
+``-s`` is only acknowledged when given a binary file, specifies an address
+for it to start, and may be written in decimal, octal (``0nn``), or
+hexadecimal (``0xnn``). It is ignored if another file type are given.
+
+**NOTE:**
+
+Data will be interpreted and disassembled as instructions. Illegal opcodes
+will be disassembled as ``???``. For this reason I recommend placing all
+data after all instructions, or placing the two in separate
+sections in the case of objects.
+
+Objects
+-------
+
+Object files will be dumped in the following format:
+
+.. code-block::
+
+    sct name
+
+    label:
+    offset: bytes disassembly
+
+For each section, ``name`` will be replaced by that section's name.
+If a label it present at an offset, it will be printed before the disassembly
+of that offset. If a reference is present, the label it refers to will be
+printed where appropriate in the disassembly's argument.
+
+``bytes`` will be replaced with the bytes that make up the instruction at
+that offset.
+
+``disassembly`` will be replaced with the disassembly of ``bytes``.
+
+.. code-block::
+
+    0000          sct text
+
+    0000          reset:
+    0000          .cold
+    0000 A9 01        lda #$01
+    0002 8D .. ..     sta started_flag
+    0005          .warm:
+    0005 A9 00        lda #$00
+    0007 8D 10 C0     sta $C010
+    000A 20 .. ..     jsr set_text_mode
+
+
+
+    0000          sct data
+
+    0000          started_flag:
+    0000              brk
+
+Note in the above example that ``started_flag`` may have originally been written
+``dfb $00``, which is the opclode of the ``brk`` instruction.
+
+Symbol Tables
+-------------
+
+Symbol tables will be displayed in the following format:
+
+.. code-block::
+
+    address name
+
+Binary Files
+------------
+
+Binary files will be dumped similarly to the object representation, but without section names, labels or references:
+
+.. code-block::
+
+    address bytes disassembly

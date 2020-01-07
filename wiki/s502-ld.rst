@@ -1,0 +1,67 @@
+Command Line
+------------
+
++----------------+------------------------------------+
+| -s             | output symbol table *filename*.65s |
++----------------+------------------------------------+
+| -c             | output symbol table *out_name*.65s |
++----------------+------------------------------------+
+| -o *out_name*  | output to file *out_name*.bin      |
++----------------+------------------------------------+
+
+If present, these arguments must appear first (in any order).
+``-s`` will output one symbol table for each object file, and ``-c`` will output one symbol table
+representing all combined objects. Following these arguments:
+
++----------------+------------------------+
+| *filename*.65o | object files to link   |
++----------------+------------------------+
+| \*.65s         | external symbol tables |
++----------------+------------------------+
+| \*.json        | linker script          |
++----------------+------------------------+
+
+Any number of object files and symbol tables may be given, then finally the linker script is mandatory.
+The file names must be given in the order listed in the table.
+
+The object file and symbol table file formats are specified in intermediate-files.
+
+References inside the objects are resolved within themselves and the given symbol tables.
+
+Linker Script
+-------------
+
+The linker script tells the linker how to organize the output file, and consists of
+string-list pairs in the format ``"name" : [start_address, end_address]``.
+
+.. code-block::
+
+    {
+        "."     : [0, 1]
+        "one"   : []
+        "two"   : [11]
+        "three" : [0, 100]
+        "four"  : [200]
+    }
+
+This script will tell the linker that the default section will be loaded into address ``0`` in memory
+and be allowed to span the addresses ``0`` to ``1`` inclusive. The start address is mandatory fir the
+first section listed, and the sections must be listed in increasing order of address space. Because the
+start address is missing for section ``one``, it will be placed immediately after the default section.
+A missing end address means that there will be  no limit on its size unless there is a specified start
+address for the following section. In this case it may span addresses ``2`` to ``10``. If it doesn't
+fill the entire space, then zero-padding will fill the gap.
+
+Sections ``two`` and ``three`` form a "section group", because section ``two`` has no explicit end and
+section ``three`` starts after section ``two`` ends. The start address ``0`` means the same as writing
+no start address. It's only written here in order to write an explicit end address. In this example,
+sections ``two`` and ``three`` combined may occupy addresses ``11`` to ``100``, though where ``two``
+ends and ``three`` begins in that group does not matter. Sections in the middle of a group may have an
+address list of ``[]`` or ``[0, 0]``. This feature may be useful for limiting the size of the entire
+program (or parts of it) while not limiting the size of individual sections, or not limiting the
+executable size at all by never specifying an end address.
+
+Section ``four`` begins at address 200, so the 99 bytes from address ``101`` to ``199`` will be filled
+with zero-bytes.
+
+``start_address`` and ``end_address`` may be written in decimal or hexadecimal (``0xnn``).

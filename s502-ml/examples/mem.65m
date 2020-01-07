@@ -1,0 +1,31 @@
+#include "mem.65h"
+
+/**
+ *                          Copies data from src to dest.
+ * @param  Y                Number of bytes to copy.
+ * @param  src              pointer to source data.
+ * @param  dest             pointer to copy the data to.
+ */
+fn memcpy {
+    // if Y == 0, immediately exit loop
+    while --Y != $ff {
+        (dest),Y = (src),Y;
+    }
+}
+
+/**
+ *                          Compares the data at src and dest.
+ * @param  Y                Number of bytes to compare.
+ * @param  src              pointer to first block of data.
+ * @param  dest             pointer to second block of data.
+ * @return Y                $ff if the two memory regions are equal,
+ *                          otherwise any other value.
+ */
+fn memcmp {
+    do {
+        Y--;
+        if (dest),Y != (src),Y {
+            ret;
+        }
+    } while Y != $ff;
+}

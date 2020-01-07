@@ -1,0 +1,8 @@
+#ifndef MEM_65H
+#define MEM_65H
+
+// in-memory pointers
+int $10 src;
+int $12 dest;
+
+#endif // MEM_65H

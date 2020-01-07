@@ -1,0 +1,238 @@
+Command Line
+------------
+
++---------------+---------------------------------------------+
+| Argument      | Meaning                                     |
++---------------+---------------------------------------------+
+| -b            | output binary format *filename*.bin         |
++---------------+---------------------------------------------+
+| -s            | output symbol table *filename*.65s          |
++---------------+---------------------------------------------+
+| -c            | output combined symbol table *filename*.65s |
++---------------+---------------------------------------------+
+| -o *out_name* | output to file *out_name*.bin               |
++---------------+---------------------------------------------+
+| -k            | keep object files                           |
++---------------+---------------------------------------------+
+| -a            | only assembly, don't link (implies -k)      |
++---------------+---------------------------------------------+
+
+If present, these arguments must appear first in any order.
+
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+|   |``-b`` present                            | ``-b`` absent                                                                        |
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+| s | creates a symbol table of each source file                                                                                      |
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+| c | ignored                                  | creates a single symbol table of the combined objects                                |
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+| o | ignored if more than 1 source file given | links all objects together into *out_name*.bin, mandatory if more than 1 source file |
+|   +------------------------------------------+--------------------------------------------------------------------------------------+
+|   | defaults to *filename*.bin if only 1 source file given                                                                          |
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+| k | ignored                                  | keeps intermediate object files                                                      |
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+| a | ignored                                  | only assemble files into objects, ignores ``-c``, implies ``-k``                     |
++---+------------------------------------------+--------------------------------------------------------------------------------------+
+
+Following these arguments:
+
++----------------+------------------------+
+| *filename*.asm | source code files      |
++----------------+------------------------+
+| \*.65s         | external symbol tables |
++----------------+------------------------+
+| \*.65l         | linker script          |
++----------------+------------------------+
+
+Any number of source files and symbol tables may be given. If ``-b`` and ``-a`` are not given,
+then the linker script is mandatory. The file names must be given in the order listed in the table.
+For more info about the linker script, see 6502-ld.
+
+Programming
+-----------
+
+Each line may have the following format, where each part is optional:
+
+``label`` ``mnemonic`` ``comment``
+
+For example:
+
+.. code-block:: asm
+
+    label: adc $20 ; add 32 to A with carry
+
+Labels
+~~~~~~
+
+Labels are case-sensitive and may be at most 31 characters. You may use a period to create a nested label.
+
+.. code-block:: asm
+
+    ; create a root label
+    my_sub:
+    ; nested label
+    .one:
+    
+    ; new root label
+    your_sub:
+
+Additionally, each label may be given a visibility:
+
++-----------+-------------------------------------------------+
+| Prefix    | Visibility                                      |
++-----------+-------------------------------------------------+
+| ``!``     | visible to file (default for root labels)       |
++-----------+-------------------------------------------------+
+| ``!!``    | globally visible                                |
++-----------+-------------------------------------------------+
+
+Nested labels are hidden by default (there is no prefix to denote this), in which case they may only be
+referenced from under its root label. File-visible labels may be referenced from anywhere in the same file.
+In addition to this, globally visible labels may be referenced from outside files and they are included in
+symbol tables.
+
+A reference to a label may exclude the root label name if it is under the same root label, otherwise it
+must contain the entire path. References are replaced by the 16 bit address of the label, or in the case
+of branching, the 8 bit offset to the label.
+
+For example:
+
+.. code-block:: asm
+
+    my_sub:
+    .one:
+        jmp around
+    !.two:
+        jmp .one ; imply my_sub.one
+
+    around:
+        jmp my_sub.two ; valid since it was made visible
+    !.get_down: ; around.get_down is visible from anywhere in the file or other files
+
+
+**Reserved Words**
+
+Words that may not be used as labels include all instruction and directive mnemonics, ``A``, ``X``,
+and ``Y``, which are used to refer to the registers in some address modes.
+
+Symbol Tables
+-------------
+
+A symbol table includes only globally visible labels and their addresses in memory, which are
+resolved by the assembler if ``-b`` is passed with the help of the ORG_ directive, or by the
+linker when given the object files produced with the help of its linker script. These symbol tables
+exist to easily allow code from multiple files to use each other without including each other's code.
+For example, you may write a single utility file and load it into memory and link its symbol table
+with other programs so they can use it without duplicating its code.
+
+Sections
+~~~~~~~~
+
+When outputting to an object, you may organize your code in `sections <https://docs.oracle.com/cd/E19455-01/806-3773/elf-3/index.html>`_
+similarly to how you would with conventional assemblers using the SCT_ directive. You may have
+a maximum of 25 sections, each with up to 1000 labels and 1000 references. Every program is given
+a default section. Creating sections is not allowed when outputting to a binary format.
+For more details, see s502-ld.
+
+Comments
+~~~~~~~~
+
+Single line comments begin with ``;``. If they span the entire line, they may also begin with ``*``.
+
+Mnemonics
+~~~~~~~~~
+
+Mnemonics include instructions and directives and are case-insensitive. The instruction mnemonics
+and address mode syntax are as described on `this page <https://www.masswerk.at/6502/6502_instruction_set.html>`_.
+
+Numbers
+~~~~~~~
+
+The numbers used on that website are all in base 16. This assembler supports the following bases:
+
++------+--------+-----------+
+| base | prefix | example   |
++------+--------+-----------+
+| 2    | ``%``  | %01101010 |
++------+--------+-----------+
+| 8    | ``@``  | @503      |
++------+--------+-----------+
+| 10   | (none) | 255       |
++------+--------+-----------+
+| 16   | ``$``  | $0200     |
++------+--------+-----------+
+
+In addition to this, any number can be prefixed with ``<`` or ``>`` to use the high or low byte
+of a 2-byte word. For instance, ``<$5023`` would evaluate to the byte ``$50`` and ``>$5023`` would
+evaluate to the byte ``$23``.
+
+If you write a number as a word, but the value fits into a byte, it will evaluate to a word. For
+instance, ``$53`` will evaluate as a byte but ``$0053`` or ``$053`` will evaluate to a word.
+When using a byte as the argument for JMP indirect, it will automatically be promoted to a word.
+
+Directives
+~~~~~~~~~~
+
+**DFB $BB**
+
+The byte BB will be produced.
+
+**DFW $HHLL**
+
+The word will be produced in little endian order.
+
+**EQU $BB or EQU $HHLL**
+
+This directive creates a macro for the byte or word following it. It must have an identifier
+(up to 31 chars) on the same line to equate the value to, and be defined before it can be used.
+Its value must be a number literal. Up to 1000 macros may be defined.
+
+For example:
+
+``KEYBOARD EQU $C000``
+
+Any mention of ``KEYBOARD`` will be replaced by the word ``$C000``.
+
+**HCF or HLT or KIL**
+
+These directives all insert the value 0x02, an illegal opcode that causes the CPU to stop
+executing instructions.
+
+**INL "STRING"**
+
+Includes a file to assemble. The path to the file must either be relative to the current
+working directory or an absolute path.
+
+.. _ORG:
+
+**ORG $HHLL**
+
+the following bytes will begin at the address $HHLL in memory. Not available if outputting
+to an object because the linker decides the addresses of everything in the output sections.
+The default beginning address is 0.
+
+.. _SCT:
+
+**SCT name**
+
+Creates a section called ``name``, or switches to if it it already exists. The default section
+is referred to as ``.``. If a label is present on the same line as ``SCT``, that label will
+appear in the current section before the directive is processed
+
+**TXT "STRING"**
+
+Place the string into memory using the Apple II character set.
+The following escape sequences are allowed:
+
++----------+-------------------------------------------------------------------------------+
+| Sequence | Meaning                                                                       |
++----------+-------------------------------------------------------------------------------+
+| ``\"``   | insert the character ``"``                                                    |
++----------+-------------------------------------------------------------------------------+
+| ``\?``   | the next characters will be inverted                                          |
++----------+-------------------------------------------------------------------------------+
+| ``\!``   | the next characters will be flashing                                          |
++----------+-------------------------------------------------------------------------------+
+| ``\.``   | the next characters will be normal (default at the beginning of every string) |
++----------+-------------------------------------------------------------------------------+

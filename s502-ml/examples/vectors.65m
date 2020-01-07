@@ -1,0 +1,9 @@
+/**
+ * interrupt vector table
+ */
+
+// don't need #org because it's plain data
+
+int nmi = $0200;
+int reset = $f800
+int irq = $0200
