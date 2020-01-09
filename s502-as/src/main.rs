@@ -1,4 +1,12 @@
+#[cfg(test)]
+#[macro_use]
+extern crate speculate;
+
 mod input;
+mod ir;
+mod output;
+
+use ir::program::Program;
 
 fn main() {
     let arg_matches = clap::App::new("s502-as 0.1")
@@ -7,6 +15,12 @@ fn main() {
                 .short("a")
                 .long("assemble")
                 .help("Only assemble, do not link"),
+        )
+        .arg(
+            clap::Arg::with_name("binary format")
+                .short("b")
+                .long("bin")
+                .help("Output file in binary format"),
         )
         .arg(
             clap::Arg::with_name("output symbol tables")
@@ -30,5 +44,10 @@ fn main() {
 
     // let compile_only = arg_matches.is_present("compile only");
 
-    let _source_files = arg_matches.values_of_lossy("sources").unwrap();
+    let source_files = arg_matches.values_of_lossy("sources").unwrap();
+
+    for source in source_files {
+        let prog = input::parser::parse_program(source);
+        // use clap args to output appropriate files
+    }
 }

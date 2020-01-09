@@ -15,7 +15,7 @@ int (z) temp;
 int (z) row_addr;
 
 // reset interrupt handler
-fn reset {
+sub reset {
     call cls;
     row = 0;
     col = 0;
@@ -33,7 +33,7 @@ fn reset {
  * @return A                A mod var.
  * @return X                A / var.
  */
-pub fn divide { // pub -> visible externally, "file" is default
+pub sub divide { // pub -> visible externally, "file" is default
     X = 0;
     while A >= var {
         X++;
@@ -45,7 +45,7 @@ pub fn divide { // pub -> visible externally, "file" is default
  *                          Calculates row_addr using row
  * @param  A                row to calculate
  */
-calc_row {
+sub calc_row {
     row = A;
 // file-visible label
 file skip_store:
@@ -75,7 +75,7 @@ file skip_store:
 /**
  *                          Clears the screen
  */
-pub fn cls {
+pub sub cls {
     for row = 0..23 {
         call calc_row.skip_store;
         for Y = 0..39 {

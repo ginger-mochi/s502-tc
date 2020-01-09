@@ -1,7 +1,7 @@
-Mill syntax in BNF
+Mill syntax in EBNF
 ==================
 
-.. code-block:: bnf
+.. code-block::
 
     <program>       ::= { <declaration> | <function> }
 
@@ -17,6 +17,6 @@ Mill syntax in BNF
                     |   [ lparen [ l | b ] [ i | u ] z rparen ]
                         ident
 
-    <function>      ::= [ pub | file ] fn ident lbrace { <statement> } rbrace
+    <function>      ::= [ pub | file ] (sub | isr) ident lbrace { <statement> } rbrace
 
     <statement>     ::=

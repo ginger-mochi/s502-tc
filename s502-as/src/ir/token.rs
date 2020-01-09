@@ -1,5 +1,10 @@
-// TODO make token struct with position, change enum to tokentype
-pub enum Token {
+pub struct Token {
+    pub pos: (String, u32),
+    pub val: TokenType,
+}
+
+#[derive(PartialEq, Debug)]
+pub enum TokenType {
     Adc,
     And,
     Asl,
@@ -59,10 +64,8 @@ pub enum Token {
     Dfb,
     Dfw,
     Equ,
-    Hcf,
     Hlt,
     Inl,
-    Kil,
     Org,
     Sct,
     Txt,

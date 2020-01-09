@@ -6,7 +6,7 @@
  * @param  src              pointer to source data.
  * @param  dest             pointer to copy the data to.
  */
-fn memcpy {
+sub memcpy {
     // if Y == 0, immediately exit loop
     while --Y != $ff {
         (dest),Y = (src),Y;
@@ -21,7 +21,7 @@ fn memcpy {
  * @return Y                $ff if the two memory regions are equal,
  *                          otherwise any other value.
  */
-fn memcmp {
+sub memcmp {
     do {
         Y--;
         if (dest),Y != (src),Y {
