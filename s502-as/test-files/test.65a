@@ -1,1 +1,28 @@
-A
+    inl "test-files/test2.65a"
+    sct txt
+cls:
+    lda #$00                    ; start at row 0
+    sta row
+    jsr calc_row.skip_store     ; calc row
+!.col:
+    lda #$A0                    ; whitespace
+    ldy #$00                    ; start at col 0
+!cls.row:
+    sta (row_addr),Y
+    iny                         ; next col
+    cpy #$28                    ; past eol?
+    bne .row                    ; no, next col
+    lda ROW
+    cmp #$18                    ; past last row?
+    beq .done                   ; yes, done
+    inc row                     ; no, next row
+    jsr calc_row.skip_store     ; calc address
+    bcc .col                    ; (calc_row does CLC before returning)
+.done:
+    dec ROW                     ; go back to last row
+    bne calc_row.skip_store     ; calculate address and return (guaranteed branch b/c row != 0)
+
+    sct txt2
+calc_row:
+    sta row
+!!.skip_store:

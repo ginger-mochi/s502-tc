@@ -8,8 +8,8 @@ impl Parser {
         Parser {
             iter: lexer::tokenize(source_file),
             current: Token {
-                pos: (String::new(), 0u32),
-                val: TokenType::EndFile,
+                pos: (String::new(), 1, 0),
+                val: TokenType::Period,
             },
             prog: Program {},
         }

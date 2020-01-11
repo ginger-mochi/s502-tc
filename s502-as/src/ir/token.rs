@@ -1,6 +1,18 @@
+use std::fmt::{Debug, Formatter};
+
 pub struct Token {
-    pub pos: (String, u32),
+    pub pos: (String, u32, u32),
     pub val: TokenType,
+}
+
+impl Debug for Token {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}:{}:{}: {:?}",
+            self.pos.0, self.pos.1, self.pos.2, self.val
+        )
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -77,13 +89,12 @@ pub enum TokenType {
     Comma,
     Lparen,
     Rparen,
-    Newline,
     Langle,
     Rangle,
     A,
     X,
     Y,
-    EndFile,
+    Newline,
     Ident(String),
     Str(String),
     Byte(u8),

@@ -1,7 +1,8 @@
 #[cfg(test)]
 #[macro_use]
 extern crate speculate;
-
+#[macro_use]
+extern crate nom;
 mod input;
 mod ir;
 mod output;
