@@ -1,13 +1,14 @@
 #[cfg(test)]
 #[macro_use]
 extern crate speculate;
-#[macro_use]
+//#[macro_use]
 extern crate nom;
-mod input;
+//mod input;
 mod ir;
 mod output;
+mod parser;
 
-use ir::program::Program;
+//use ir::program::Program;
 
 fn main() {
     let arg_matches = clap::App::new("s502-as 0.1")
@@ -48,7 +49,7 @@ fn main() {
     let source_files = arg_matches.values_of_lossy("sources").unwrap();
 
     for source in source_files {
-        let prog = input::parser::parse_program(source);
+        //let prog = input::parser::parse_program(source);
         // use clap args to output appropriate files
     }
 }

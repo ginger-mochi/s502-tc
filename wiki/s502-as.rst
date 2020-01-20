@@ -65,7 +65,7 @@ For example:
 Labels
 ~~~~~~
 
-Labels are case-sensitive and may be at most 31 characters. You may use a period to create a nested label.
+Labels are case-sensitive and may be at most 31 characters. You may use a period to create a child label.
 
 .. code-block:: asm
 
@@ -79,20 +79,20 @@ Labels are case-sensitive and may be at most 31 characters. You may use a period
 
 Additionally, each label may be given a visibility:
 
-+-----------+-------------------------------------------------+
-| Prefix    | Visibility                                      |
-+-----------+-------------------------------------------------+
-| ``!``     | visible to file (default for root labels)       |
-+-----------+-------------------------------------------------+
-| ``!!``    | globally visible                                |
-+-----------+-------------------------------------------------+
++-----------+---------------------------------------------+
+| Prefix    | Visibility                                  |
++-----------+---------------------------------------------+
+| ``!``     | visible to file (default for parent labels) |
++-----------+---------------------------------------------+
+| ``!!``    | globally visible                            |
++-----------+---------------------------------------------+
 
-Nested labels are hidden by default (there is no prefix to denote this), in which case they may only be
-referenced from under its root label. File-visible labels may be referenced from anywhere in the same file.
+Child labels are hidden by default (there is no prefix to denote this), in which case they may only be
+referenced from under its parent label. File-visible labels may be referenced from anywhere in the same file.
 In addition to this, globally visible labels may be referenced from outside files and they are included in
 symbol tables.
 
-A reference to a label may exclude the root label name if it is under the same root label, otherwise it
+A reference to a label may exclude the parent label name if it is under the same parent label, otherwise it
 must contain the entire path. References are replaced by the 16 bit address of the label, or in the case
 of branching, the 8 bit offset to the label.
 
@@ -182,7 +182,7 @@ The byte BB will be produced.
 
 The word will be produced in little endian order.
 
-**EQU $BB or EQU $HHLL**
+**equ $BB or equ $HHLL**
 
 This directive creates a macro for the byte or word following it. It must have an identifier
 (up to 31 chars) on the same line to equate the value to, and be defined before it can be used.
@@ -190,16 +190,16 @@ Its value must be a number literal. Up to 1000 macros may be defined.
 
 For example:
 
-``KEYBOARD EQU $C000``
+``keyboard equ $c000``
 
-Any mention of ``KEYBOARD`` will be replaced by the word ``$C000``.
+Any mention of ``keyboard`` will be replaced by the word ``$c000``.
 
-**HCF or HLT or KIL**
+**HLT**
 
-These directives all insert the value 0x02, an illegal opcode that causes the CPU to stop
+This directive inserts the value 0x02, an illegal opcode that causes the CPU to stop
 executing instructions.
 
-**INL "STRING"**
+**inl "STRING"**
 
 Includes a file to assemble. The path to the file must either be relative to the current
 working directory or an absolute path.
@@ -214,13 +214,13 @@ The default beginning address is 0.
 
 .. _SCT:
 
-**SCT name**
+**sct name**
 
 Creates a section called ``name``, or switches to if it it already exists. The default section
 is referred to as ``.``. If a label is present on the same line as ``SCT``, that label will
 appear in the current section before the directive is processed
 
-**TXT "STRING"**
+**txt "STRING"**
 
 Place the string into memory using the Apple II character set.
 The following escape sequences are allowed:

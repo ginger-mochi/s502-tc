@@ -18,4 +18,3 @@ Table of Contents
 
 1. Variables
 2. Functions
-3. BNF Syntax
